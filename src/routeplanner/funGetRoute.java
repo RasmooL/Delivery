@@ -30,8 +30,8 @@ public class funGetRoute implements Userfunction {
 		// Calculate shortest route between current position and all n goals:
 			// foreach goal in goals:
 				// a-star(current, goal)
-				// foreach other_goal in goals != goal:
-					// a-star(goal, other_goal)
+				// foreach other_goal in goals != goal && not already calculated
+					// a-star(goal, other_goal) 
 		// Bruteforce TSP problem:
 			// todo
 		
