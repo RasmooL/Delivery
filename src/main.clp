@@ -1,9 +1,10 @@
 (load-package jessmw.pkg)
-(SMRConnect jess_conf.xml)
-(defrule movefwd
-    (movefwd)
-    (smr0.mrc.mrc.odometry (x ?x)(y ?y))
-    =>
-    (SMRTalk "drive " ?x " " ?y " 0 \"rad\"" )
-)
-(facts)
+(load-package routeplanner.pkg)
+;(SMRConnect jess_conf.xml)
+
+(deftemplate goal
+    (slot x)
+    (slot y))
+
+(assert (goal (x 1)(y 4)))
+(get-route)
