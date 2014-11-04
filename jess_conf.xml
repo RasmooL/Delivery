@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+  <mobotware instance="smr0">
+    <server name="mrc" host="localhost">
+    <struct name="mrc">
+      <push>
+        <time>0.5</time>
+      </push>
+      <var>
+        <name>currentcommand</name>
+        <factName>CurrentCommand</factName>
+      </var>
+      <var>
+        <name>commandqueue</name>
+      </var>
+      <var>
+        <name>odometry</name>
+      </var>
+    </struct>
+  </server>
+
+  <server name="laser" host="localhost" port="20001">
+    <struct name="v360">
+      <var>
+        <name>lastSerial</name>
+        <type>double</type>
+        <width>1</width>
+      </var>
+    </struct>
+    <struct name="mappose">
+      <var>
+        <factName>map.minDist</factName>
+        <name>minDist</name>
+        <width>1</width>
+        <type>double</type>
+      </var>
+      <var>
+        <factName>mappose</factName>
+        <name>pose</name>
+        <width>3</width>
+        <type>double</type>
+      </var>
+      <var>
+        <name>time</name>
+        <width>1</width>
+        <type>time</type>
+      </var>
+      <push>
+        <time>0.2</time>
+        <cmd>localize</cmd>
+      </push>
+    </struct>
+  </server>
+</mobotware>
