@@ -25,15 +25,17 @@ public class funGetRoute implements Userfunction {
 			System.out.println(fact.toString());
 		}
 		
-		// Pseudocode for route plan:
+		// Pseudocode for route plan - pretty clever, A* is used to create TSP problem which is then solved
 		
-		// Calculate shortest route between current position and all n goals:
+		// Calculate shortest routes between every pair of goals and current pos
 			// foreach goal in goals:
 				// a-star(current, goal)
 				// foreach other_goal in goals != goal && not already calculated
 					// a-star(goal, other_goal) 
-		// Bruteforce TSP problem:
-			// todo
+		// Bruteforce TSP problem (for n < ~13), guaranteed optimal solution
+			// foreach circuit in goal graph - runs (n-1)! times
+				// calculate circuit length
+			// choose circuit with smallest length
 		
 		return jess.Funcall.NIL;
 	}
