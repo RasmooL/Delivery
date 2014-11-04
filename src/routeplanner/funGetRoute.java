@@ -32,7 +32,7 @@ public class funGetRoute implements Userfunction {
 				// a-star(current, goal)
 				// foreach other_goal in goals != goal && not already calculated
 					// a-star(goal, other_goal) 
-		// Bruteforce TSP problem (for n < ~13), guaranteed optimal solution
+		// Bruteforce TSP problem (for n < ~13), guaranteed optimal solution (see perhaps http://bonsaicode.wordpress.com/2010/03/12/programming-praxis-traveling-salesman-brute-force/)
 			// foreach circuit in goal graph - runs (n-1)! times
 				// calculate circuit length
 			// choose circuit with smallest length
