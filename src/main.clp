@@ -19,23 +19,33 @@
     (slot x)
     (slot y))
 
-(assert (goal (x 1)(y 4)))
+;(assert (goal (x 1)(y 4)))
 (assert (move 1 0))
 
-(defrule move-xy
+(defrule move-x
     ?m<-(move ?x ?y)
-    (smr0.mrc.mrc.odometry (x ?ox) (y ?oy))
     =>
-    (if (< ?ox ?x) then
-        (SMRTalk "fwd 0.1")
-     else
-        (printout t "Done: x=" ?ox "  y=" ?oy crlf)
-        (retract ?m)
-        (halt)
-    )
+    (bind ?ox (SMRTalk "eval $odox"))
+    (SMRTalk "fwd 10 :($odox = " ?x ")")
+    
+;    Alternative:
+    
+;    (while (neq ?ox ?x)
+;        (SMRTalk "drive")
+;    )
+;    (SMRTalk "stop")
+    
+    (retract ?m)
+;    (if (< ?ox ?x) then
+;        (SMRTalk "fwd 0.1")
+;     else
+;        (printout t "Done: x=" ?ox "  y=" ?oy crlf)
+;        (retract ?m)
+;        (halt)
+;    )
 )
 
-(run-until-halt)
+(run)
 
 ;(defrule move-xy-1
 ;    (move ?x ?y)
