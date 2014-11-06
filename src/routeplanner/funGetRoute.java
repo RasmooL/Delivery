@@ -6,6 +6,7 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 
 public class funGetRoute implements Userfunction {
 	
@@ -21,19 +22,55 @@ public class funGetRoute implements Userfunction {
 	@Override
 	public Value call(ValueVector vv, Context context) throws JessException {
 		engine = context.getEngine();
-		if(vv.size() != 2) throw new JessException(functionName, "Wrong number of arguments ", vv.size() - 1);
+		if(vv.size() != 3) throw new JessException(functionName, "Wrong number of arguments ", vv.size() - 1);
+		String file = vv.get(1).stringValue(context);
+		int start_node = vv.get(2).intValue(context);
+		
 		// Go through facts and find goal facts
-		/*Iterator facts = engine.listFacts();
+		Iterator<Fact> facts = engine.listFacts();
+		int numGoals = 0;
+		List<Fact> goals = new ArrayList<Fact>();
 		while(facts.hasNext())
 		{
-			Fact fact = (Fact) facts.next();
-			System.out.println(fact.toString());
-		}*/
+			Fact fact = facts.next();
+			if(!fact.getName().equals("MAIN::goal"))
+				continue;
+			numGoals++;
+			goals.add(fact);
+		}
 		
-		loadWaypoints(vv.get(1).stringValue(context));
-		//AStar as = new AStar(nodes);
-		//List<Node> sol = as.calculate(1, 6);
-		//System.out.println(sol.toString());
+		loadWaypoints(file);
+		
+		AStar as = new AStar(nodes);
+		
+		// Map[goal_from].Map[goal_to].List<Node> -- Symmetric
+		Map<Integer, Map<Integer, List<Node>>> paths = new HashMap<Integer, Map<Integer, List<Node>>>();
+		for(int g = 0; g < numGoals; g++) // g = goal_from
+		{
+			int goal_from = goals.get(g).getSlotValue("waypoint").intValue(context);
+			Map<Integer, List<Node>> inner_map = new HashMap<Integer, List<Node>>();
+			
+			// Start node
+			inner_map.put(start_node, as.calculate(goal_from, start_node));
+			
+			// Goal nodes
+			for(int i = 0; i < numGoals; i++) // i = goal_to
+			{
+				
+				int goal_to = goals.get(i).getSlotValue("waypoint").intValue(context);
+				if(i == g) continue; // Same goal
+				inner_map.put(goal_to, as.calculate(goal_from, goal_to));
+			}
+			paths.put(goal_from, inner_map);
+		}
+		Map<Integer, List<Node>> inner_map = new HashMap<Integer, List<Node>>();
+		for(int i = 0; i < numGoals; i++)
+		{
+			int goal_to = goals.get(i).getSlotValue("waypoint").intValue(context);
+			inner_map.put(goal_to, as.calculate(start_node, goal_to));
+		}
+		paths.put(start_node, inner_map);
+		System.out.println(paths.toString());
 		
 		// Pseudocode for route plan - pretty clever, A* is used to create TSP problem which is then solved
 		
@@ -89,6 +126,11 @@ public class funGetRoute implements Userfunction {
 		{
 			throw new JessException(functionName, e.getMessage(), 0);
 		}
+		// Debug
+		/*for(Map.Entry<Integer, Node> node : nodes.entrySet())
+		{
+			System.out.println("Neighbors of node " + node.getKey() + ":\n" + node.getValue().neighbors.toString());
+		}*/
 		
 	}
 

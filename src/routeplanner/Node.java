@@ -28,7 +28,7 @@ public class Node {
 		    
     @Override
 	public String toString() {  	
-    	String tmp = this.x + " " + this.y;
+    	String tmp = "(" + this.x + ", " + this.y + ")";
     	/*for(Node node : neighbors)
     	{
     		tmp += "-> " + node.x + " " + node.y;

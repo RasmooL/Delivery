@@ -3,14 +3,13 @@ import java.util.*;
 
 public class AStar {
 	Comparator<Node> compare = new FScoreComparator();
-	PriorityQueue<Node> frontier;
+	PriorityQueue<Node> frontier = new PriorityQueue<Node>(100, compare);
 	HashMap<Integer, Node> nodes;
 	Set<Node> explored = new HashSet<Node>();
 	
 	public AStar(HashMap<Integer, Node> nodes)
 	{
 		this.nodes = nodes;
-		frontier = new PriorityQueue<Node>(100, compare);
 	}
 	
 	private Boolean nodeExists(Integer n) {
@@ -24,6 +23,9 @@ public class AStar {
 	
 	public List<Node> calculate(int start, int goal)
 	{
+		frontier.clear();
+		//explored.clear(); // It doesn't work if you clear explored
+		
 		if(!nodeExists(start) || !nodeExists(goal))
 		{
 			System.out.println("A*: Start or end node doesn't exist!");

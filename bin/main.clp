@@ -1,11 +1,9 @@
 (load-package jessmw.pkg)
 (load-package routeplanner.pkg)
 ;(SMRConnect jess_conf.xml)
-(get-route "waypoints")
 
 (deftemplate goal
-    (slot x)
-    (slot y))
+    (slot waypoint))
 ;(defclass odo jessmw.Odometry)
 ;(deftemplate smr0.mrc.mrc.odometry
 ;    (slot dist)
@@ -19,8 +17,10 @@
 ;    (slot x)
 ;    (slot y))
 
-(assert (goal (x 1)(y 4)))
-(assert (move 2 2))
+(assert (goal (waypoint 6)))
+;(assert (goal (waypoint 10)))
+;(assert (move 2 2))
+(get-route "waypoints" 1)
 
 (defrule move-xy
     ?m<-(move ?x ?y)
