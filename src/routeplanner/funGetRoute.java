@@ -6,10 +6,11 @@ import java.util.*;
 public class funGetRoute implements Userfunction {
 	
 	private Rete engine;
+	private String functionName = "get-route";
 	
 	@Override
 	public String getName() {
-		return "get-route";
+		return functionName;
 	}
 
 	@Override
