@@ -9,7 +9,6 @@ public class pkg implements Userpackage {
     	reteEngine = engine;
     	
     	engine.addUserfunction(new funGetRoute());
-    	engine.addUserfunction(new funLoadWaypoints());
 
 		//engine.addJessListener(new eventHandler());		 //handles retraction of facts
 		//engine.setEventMask(engine.getEventMask() | JessEvent.FACT );

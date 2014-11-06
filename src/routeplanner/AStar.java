@@ -22,12 +22,12 @@ public class AStar {
 		return false;
 	}
 	
-	public void calculate(int start, int goal)
+	public List<Node> calculate(int start, int goal)
 	{
 		if(!nodeExists(start) || !nodeExists(goal))
 		{
-			System.out.println("A*: Start or end node doesn't exist!")
-			return;
+			System.out.println("A*: Start or end node doesn't exist!");
+			return null;
 		}
 		
 		frontier.add(nodes.get(start));
@@ -36,9 +36,8 @@ public class AStar {
 		{
 			Node currentNode = frontier.poll();
 
-			if (currentNode.equals(goal)) {
-				reconstructPath(start, currentNode);
-				break;
+			if (currentNode.equals(nodes.get(goal))) {
+				return reconstructPath(nodes.get(start), currentNode);
 			}
 
 			frontier.remove(currentNode);
@@ -63,16 +62,21 @@ public class AStar {
 
 			}
 		}
+		System.out.println("A*: No solution!");
+		return null;
 	}
 	
-	private void reconstructPath(Node start, Node current) {
+	private List<Node> reconstructPath(Node start, Node current) {
 		List<Node> nodes = new ArrayList<Node>();
 		while (current.cameFrom != null) {
 			nodes.add(current);
 			current = current.cameFrom;
 		}
 		nodes.add(start);
+		Collections.reverse(nodes);
+		return nodes;
 
+		/*
 		for (int i = nodes.size() - 1; i > 0; i--) {
 			Node from = nodes.get(i);
 			Node to = nodes.get(i - 1);
@@ -87,9 +91,8 @@ public class AStar {
 				}
 
 			}
+			*/
 		}
-
-	}
 	
 	private float heuristicEstimate(Node start, Node goal)
 	{

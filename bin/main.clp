@@ -1,7 +1,7 @@
 (load-package jessmw.pkg)
 (load-package routeplanner.pkg)
 ;(SMRConnect jess_conf.xml)
-(load-waypoints waypoints)
+(get-route "waypoints")
 
 (deftemplate goal
     (slot x)
