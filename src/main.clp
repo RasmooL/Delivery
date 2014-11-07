@@ -18,7 +18,7 @@
 ;    (slot y))
 
 (assert (goal (waypoint 6)))
-;(assert (goal (waypoint 10)))
+(assert (goal (waypoint 10)))
 ;(assert (move 2 2))
 (get-route "waypoints" 1)
 

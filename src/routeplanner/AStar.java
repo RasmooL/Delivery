@@ -21,10 +21,21 @@ public class AStar {
 		return false;
 	}
 	
+	private void clearNodes(HashMap<Integer, Node> nodes)
+	{
+		for(Node node : nodes.values())
+		{
+			node.cameFrom = null;
+			node.f_score = 0;
+			node.g_score = 0;
+		}
+	}
+	
 	public List<Node> calculate(int start, int goal)
 	{
+		clearNodes(nodes);
 		frontier.clear();
-		//explored.clear(); // It doesn't work if you clear explored
+		explored.clear(); // It doesn't work if you clear explored
 		
 		if(!nodeExists(start) || !nodeExists(goal))
 		{

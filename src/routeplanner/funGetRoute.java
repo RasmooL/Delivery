@@ -56,7 +56,7 @@ public class funGetRoute implements Userfunction {
 			// Goal nodes
 			for(int i = 0; i < numGoals; i++) // i = goal_to
 			{
-				
+				//System.out.println(g + " => " + i);
 				int goal_to = goals.get(i).getSlotValue("waypoint").intValue(context);
 				if(i == g) continue; // Same goal
 				inner_map.put(goal_to, as.calculate(goal_from, goal_to));
