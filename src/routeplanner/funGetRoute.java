@@ -38,6 +38,7 @@ public class funGetRoute implements Userfunction {
 			numGoals++;
 			goals.add(fact);
 		}
+		if(numGoals < 1) throw new JessException(functionName, "No goals ", 0);
 		
 		loadWaypoints(file);
 		
@@ -72,6 +73,30 @@ public class funGetRoute implements Userfunction {
 		paths.put(start_node, inner_map);
 		System.out.println(paths.toString());
 		
+		// TSP bruteforce, super slow with n>10 :O
+		List<Integer> goalList = new ArrayList<Integer>(paths.keySet());
+		Collections.sort(goalList);
+		Integer[] goalArray = new Integer[goalList.size()];
+		goalList.toArray(goalArray);
+		Integer[] bestRoute = null;
+		float currentLength = Float.MAX_VALUE;
+		float newLength = Float.MAX_VALUE;
+		long startTime = System.currentTimeMillis();
+		do
+		{
+			if(!goalArray[0].equals(start_node)) continue; // We only want permutations that start at our start node
+			newLength = routeLength(paths, goalArray);
+			//System.out.println(Arrays.toString(goalArray) + " = " + newLength); // Prints all permutations (slow!)
+			if(newLength < currentLength)
+			{
+				bestRoute = goalArray.clone();
+				currentLength = newLength;
+			}
+		}
+		while(next_permutation(goalArray));
+		long endTime = System.currentTimeMillis();
+		System.out.println("Best route: " + Arrays.toString(bestRoute) + " = " + currentLength + "(" + (endTime-startTime) + " ms)");
+		
 		// Pseudocode for route plan - pretty clever, A* is used to create TSP problem which is then solved
 		
 		// Calculate shortest routes between every pair of goals and current pos
@@ -79,12 +104,60 @@ public class funGetRoute implements Userfunction {
 				// a-star(current, goal)
 				// foreach other_goal in goals != goal && not already calculated
 					// a-star(goal, other_goal) 
-		// Bruteforce TSP problem (for n < ~13), guaranteed optimal solution (see perhaps http://bonsaicode.wordpress.com/2010/03/12/programming-praxis-traveling-salesman-brute-force/)
+		// Bruteforce TSP problem
 			// foreach circuit in goal graph - runs (n-1)! times
 				// calculate circuit length
 			// choose circuit with smallest length
 		
 		return jess.Funcall.NIL;
+	}
+	
+	// Calculates route length, ending back at the first node
+	float routeLength(Map<Integer, Map<Integer, List<Node>>> paths, Integer[] route)
+	{
+		float length = 0;
+		for(int goal_num = 0; goal_num < route.length; goal_num++)
+		{
+			int fromNode = route[goal_num];
+			int toNode = route[(goal_num + 1) % route.length];
+			List<Node> path = paths.get(fromNode).get(toNode);
+			
+			Node curNode = nodes.get(fromNode);
+			for(Node waypoint : path)
+			{
+				if(curNode == waypoint) continue;
+				length += curNode.distance(waypoint);
+				curNode = waypoint;
+			}
+		}
+		return length;
+	}
+	
+	boolean next_permutation(Integer[] p)
+	{
+		for (int a = p.length - 2; a >= 0; --a)
+		{
+			if (p[a] < p[a + 1])
+			{
+				for (int b = p.length - 1;; --b)
+				{
+					if (p[b] > p[a])
+					{
+						int t = p[a];
+						p[a] = p[b];
+						p[b] = t;
+						for (++a, b = p.length - 1; a < b; ++a, --b)
+						{
+							t = p[a];
+							p[a] = p[b];
+							p[b] = t;
+						}
+					return true;
+					}
+				}
+			}
+		}
+		return false;
 	}
 	
 	public void loadWaypoints(String file) throws JessException {

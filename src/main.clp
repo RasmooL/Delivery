@@ -17,8 +17,16 @@
 ;    (slot x)
 ;    (slot y))
 
+(assert (goal (waypoint 2)))
+(assert (goal (waypoint 3)))
+(assert (goal (waypoint 4)))
+(assert (goal (waypoint 5)))
 (assert (goal (waypoint 6)))
-(assert (goal (waypoint 10)))
+(assert (goal (waypoint 7)))
+(assert (goal (waypoint 8)))
+(assert (goal (waypoint 9)))
+(assert (goal (waypoint 12)))
+(assert (goal (waypoint 15)))
 ;(assert (move 2 2))
 (get-route "waypoints" 1)
 

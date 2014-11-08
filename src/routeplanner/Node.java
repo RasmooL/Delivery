@@ -17,7 +17,7 @@ public class Node {
 	
 	float distance(Node node)
 	{
-		return (float)Math.sqrt((x-node.x)*(x-node.x) + (y-node.y)*(y-node.y));
+		return (float)Math.hypot(x - node.x, y - node.y);
 	}
 	
 	Node(float x, float y) {
