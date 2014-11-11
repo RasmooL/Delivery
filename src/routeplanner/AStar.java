@@ -35,7 +35,7 @@ public class AStar {
 	{
 		clearNodes(nodes);
 		frontier.clear();
-		explored.clear(); // It doesn't work if you clear explored
+		explored.clear();
 		
 		if(!nodeExists(start) || !nodeExists(goal))
 		{

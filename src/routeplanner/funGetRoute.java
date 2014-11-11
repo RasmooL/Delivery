@@ -76,26 +76,41 @@ public class funGetRoute implements Userfunction {
 		// TSP bruteforce, super slow with n>10 :O
 		List<Integer> goalList = new ArrayList<Integer>(paths.keySet());
 		Collections.sort(goalList);
-		Integer[] goalArray = new Integer[goalList.size()];
-		goalList.toArray(goalArray);
-		Integer[] bestRoute = null;
+		List<Integer> bestRoute = null;
+		//Integer[] bestRoute = null;
 		float currentLength = Float.MAX_VALUE;
 		float newLength = Float.MAX_VALUE;
 		long startTime = System.currentTimeMillis();
 		do
 		{
-			if(!goalArray[0].equals(start_node)) continue; // We only want permutations that start at our start node
-			newLength = routeLength(paths, goalArray);
+			if(!goalList.get(0).equals(start_node)) continue; // We only want permutations that start at our start node
+			newLength = routeLength(paths, goalList);
 			//System.out.println(Arrays.toString(goalArray) + " = " + newLength); // Prints all permutations (slow!)
 			if(newLength < currentLength)
 			{
-				bestRoute = goalArray.clone();
+				bestRoute = new ArrayList<Integer>(goalList);
 				currentLength = newLength;
 			}
 		}
-		while(next_permutation(goalArray));
+		while(next_permutation(goalList));
 		long endTime = System.currentTimeMillis();
-		System.out.println("Best route: " + Arrays.toString(bestRoute) + " = " + currentLength + "(" + (endTime-startTime) + " ms)");
+		bestRoute.add(bestRoute.get(0)); // End = start
+		System.out.println("Best route: " + bestRoute.toString() + " = " + currentLength + "(" + (endTime-startTime) + " ms)");
+		
+		int waynum = 0;
+		for(int num = 1; num < bestRoute.size(); num++)
+		{
+			int from = bestRoute.get(num - 1);
+			int to = bestRoute.get(num);
+			Node fromNode = nodes.get(from);
+			Node toNode = nodes.get(to);
+			List<Node> waypoints = paths.get(from).get(to);
+			for(Node waypoint : waypoints)
+			{
+				engine.assertString("(move-plan " + waynum++ + " " + waypoint.x + " " + waypoint.y + ")");
+			}
+		}
+			
 		
 		// Pseudocode for route plan - pretty clever, A* is used to create TSP problem which is then solved
 		
@@ -113,13 +128,13 @@ public class funGetRoute implements Userfunction {
 	}
 	
 	// Calculates route length, ending back at the first node
-	float routeLength(Map<Integer, Map<Integer, List<Node>>> paths, Integer[] route)
+	float routeLength(Map<Integer, Map<Integer, List<Node>>> paths, List<Integer> route)
 	{
 		float length = 0;
-		for(int goal_num = 0; goal_num < route.length; goal_num++)
+		for(int goal_num = 0; goal_num < route.size(); goal_num++)
 		{
-			int fromNode = route[goal_num];
-			int toNode = route[(goal_num + 1) % route.length];
+			int fromNode = route.get(goal_num);
+			int toNode = route.get((goal_num + 1) % route.size());
 			List<Node> path = paths.get(fromNode).get(toNode);
 			
 			Node curNode = nodes.get(fromNode);
@@ -133,24 +148,24 @@ public class funGetRoute implements Userfunction {
 		return length;
 	}
 	
-	boolean next_permutation(Integer[] p)
+	boolean next_permutation(List<Integer> p)
 	{
-		for (int a = p.length - 2; a >= 0; --a)
+		for (int a = p.size() - 2; a >= 0; --a)
 		{
-			if (p[a] < p[a + 1])
+			if (p.get(a) < p.get(a + 1))
 			{
-				for (int b = p.length - 1;; --b)
+				for (int b = p.size() - 1;; --b)
 				{
-					if (p[b] > p[a])
+					if (p.get(b) > p.get(a))
 					{
-						int t = p[a];
-						p[a] = p[b];
-						p[b] = t;
-						for (++a, b = p.length - 1; a < b; ++a, --b)
+						int t = p.get(a);
+						p.set(a, p.get(b));
+						p.set(b, t);
+						for (++a, b = p.size() - 1; a < b; ++a, --b)
 						{
-							t = p[a];
-							p[a] = p[b];
-							p[b] = t;
+							t = p.get(a);
+							p.set(a, p.get(b));
+							p.set(b, t);
 						}
 					return true;
 					}
