@@ -8,6 +8,8 @@
 (assert (plan (movenum 1)(theta 0)))
 (deftemplate goal
     (slot waypoint))
+;(deftemplate laserbox.detections
+;    (multislot value))
 ;(defclass odo jessmw.Odometry)
 ;(deftemplate smr0.mrc.mrc.odometry
 ;    (slot dist)
@@ -24,15 +26,28 @@
 (assert (goal (waypoint 2)))
 ;(assert (goal (waypoint 3)))
 ;(assert (goal (waypoint 4)))
-(assert (goal (waypoint 5)))
-;(assert (goal (waypoint 6)))
-(assert (goal (waypoint 7)))
-(assert (goal (waypoint 8)))
-;(assert (goal (waypoint 9)))
+;(assert (goal (waypoint 5)))
+(assert (goal (waypoint 6)))
+;(assert (goal (waypoint 7)))
+;(assert (goal (waypoint 8)))
+(assert (goal (waypoint 9)))
 ;(assert (goal (waypoint 12)))
 ;(assert (goal (waypoint 15)))
 ;(assert (move 2 2))
-(get-route "waypoints" 1)
+;(get-route "waypoints" 1)
+
+(defrule stop-front
+    (laserbox.detections (value ?front&:(> ?front 200) ?left ?right))
+    =>
+    (SMRTalk "flushcmds")
+    (SMRTalk "stop")
+)
+(defrule stop-front
+    (laserbox.detections (value ?front&:(> ?front 200) ?left ?right))
+    =>
+    (SMRTalk "flushcmds")
+    (SMRTalk "stop")
+)
 
 (defrule move-xy
     ?m<-(move ?x ?y)
@@ -42,7 +57,7 @@
     ;(bind ?ox (SMRTalk "eval $odox"))
     ;(bind ?oy (SMRTalk "eval $odoy"))
 	(SMRTalk (str-cat "turn " ?th " \"rad\""))
-    (SMRTalk (str-cat "drive :(abs($odox - " ?x ") < 0.2 & abs($odoy - " ?y ") < 0.2)")); | ($irdistfrontmiddle < 1 ))" ))
+    (SMRTalk (str-cat "drive :((($odox - " ?x ")*($odox - " ?x ") + ($odoy - " ?y ")*($odoy - " ?y ")) < 0.01)")); | ($irdistfrontmiddle < 1 ))" ))
     (SMRTalk "stop")
 
     (retract ?m ?d)
@@ -62,4 +77,5 @@
     (retract ?m1)
 )
 
-(run)
+;(watch facts)
+(run-until-halt)

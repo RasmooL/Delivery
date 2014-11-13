@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
   <mobotware instance="smr0">
     <server name="mrc" host="localhost">
     <struct name="mrc">
@@ -48,6 +48,18 @@
         <time>0.2</time>
         <cmd>localize</cmd>
       </push>
+    </struct>
+    <struct name="laserbox">
+      <var>
+        <factName>laserbox.detections</factName>
+        <name>detections</name>
+        <type>double</type>
+        <width>1</width>      
+      </var>
+      <push>
+        <time>0.2</time>
+        <cmd>laserbox detect</cmd>
+      </push>    
     </struct>
   </server>
 </mobotware>
