@@ -49,10 +49,13 @@
 ;    (SMRTalk "stop")
 ;)
 
-(deffunction SMRTalkID (?str)
+(defglobal ?*cmdnum* = 2)
+; Keep track of SMR command IDs 
+(deffunction MyTalk (?str)
     (SMRTalk ?str)
-    
-    )
+    (++ ?*cmdnum*)
+    (return (- ?*cmdnum* 1))
+)
 
 (defrule move-xy
     ?m<-(move ?x ?y ?th ?danger)
@@ -61,17 +64,17 @@
     (printout t "move " ?fx " " ?fy " => " ?x " " ?y crlf)
     ;(bind ?ox (SMRTalk "eval $odox"))
     ;(bind ?oy (SMRTalk "eval $odoy"))
-	(SMRTalk (str-cat "turn " ?th " \"rad\""))
-    (SMRTalk (str-cat "drive :((($odox - " ?x ")*($odox - " ?x ") + ($odoy - " ?y ")*($odoy - " ?y ")) < 0.01)")); | ($irdistfrontmiddle < 1 ))" ))
-    (SMRTalk "stop")
+	(bind ?cmdnum (MyTalk (str-cat "turn " ?th " \"rad\"")))
+    (MyTalk (str-cat "drive :((($odox - " ?x ")*($odox - " ?x ") + ($odoy - " ?y ")*($odoy - " ?y ")) < 0.01)")); | ($irdistfrontmiddle < 1 ))" ))
+    (MyTalk "stop")
     
-	(assert (danger ?fx ?fy ?fdanger ))
+	(assert (danger ?cmdid ?fx ?fy ?fdanger ))
     (retract ?m ?d)
 )
 
-(defrule react 
-    (CurrentCommand )
-    ?d<-(danger ?fx ?fy ?fth)
+(defrule react-door
+    (CurrentCommand (Id ?cmdid))
+    ?d<-(react-door ?cmdid)
     =>
     )
 
@@ -89,7 +92,7 @@
     (if (or (eq ?danger 0)(eq ?fdanger 0)) then
         ()
      elif (and (eq ?danger 1)(eq ?fdanger 1)) then
-        ()
+        (assert (react-door ))
      elif (and (eq ?danger 2)(eq ?fdanger 2)) then
         
     )

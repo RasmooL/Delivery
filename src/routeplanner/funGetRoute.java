@@ -199,15 +199,15 @@ public class funGetRoute implements Userfunction {
 				{
 					int first = Integer.parseInt(tokens[1]);
 					int second = Integer.parseInt(tokens[2]);
-					String third = tokens[3];
+					String third = (tokens.length == 4)?tokens[3]:null;
 					nodes.get(first).neighbors.add(nodes.get(second));
 					nodes.get(second).neighbors.add(nodes.get(first));
-					if(third.equals("D")) // door
+					if(third != null && third.equals("D")) // door
 					{
 						nodes.get(first).danger = 1;
 						nodes.get(second).danger = 1;
 					}
-					else if(third.equals("R")) // robot
+					else if(third != null && third.equals("R")) // robot
 					{
 						nodes.get(first).danger = 2;
 						nodes.get(second).danger = 2;
