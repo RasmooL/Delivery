@@ -11,7 +11,7 @@ public class funSMRTalk implements Userfunction {
 	
     public Value call(ValueVector vv, Context c) throws JessException {
 		String retstr = null; //new String("");
-		if ((vv.size() < 2) || (vv.size() > 3)) throw new JessException(functionName,"Wrong number of arguments ",vv.size() - 1);
+		if ((vv.size() != 2)) throw new JessException(functionName,"Wrong number of arguments ",vv.size() - 1);
 		
 		String cmd = vv.get(1).stringValue(c);
 		

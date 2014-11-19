@@ -49,9 +49,14 @@
 ;    (SMRTalk "stop")
 ;)
 
+(deffunction SMRTalkID (?str)
+    (SMRTalk ?str)
+    
+    )
+
 (defrule move-xy
-    ?m<-(move ?x ?y ?danger)
-    ?d<-(do-move ?fx ?fy ?th ?fdanger)
+    ?m<-(move ?x ?y ?th ?danger)
+    ?d<-(move-from ?fx ?fy ?fth ?fdanger)
     =>
     (printout t "move " ?fx " " ?fy " => " ?x " " ?y crlf)
     ;(bind ?ox (SMRTalk "eval $odox"))
@@ -65,8 +70,8 @@
 )
 
 (defrule react 
-    (mappose (value ?fx ?fy ?fth))
-    (danger ?fx ?fy ?fth)
+    (CurrentCommand )
+    ?d<-(danger ?fx ?fy ?fth)
     =>
     )
 
@@ -79,8 +84,8 @@
     (bind ?th (SMRTalk (str-cat "eval atan2(" (- ?y ?fy) "," (- ?x ?fx) ") - " ?fth)))
     (printout t "plan " ?movenum ": " ?fx " " ?fy " " ?fth " => " ?x " " ?y " " ?th crlf)
     (modify ?p (movenum (+ ?movenum 1))(theta (+ ?fth ?th)))
-    (assert (move ?x ?y ?danger))
-    (assert (do-move ?fx ?fy ?th ?fdanger))
+    (assert (move ?x ?y ?th ?danger))
+    (assert (move-from ?fx ?fy ?fth ?fdanger))
     (if (or (eq ?danger 0)(eq ?fdanger 0)) then
         ()
      elif (and (eq ?danger 1)(eq ?fdanger 1)) then

@@ -164,6 +164,7 @@ public class SMRobject implements Runnable {
     }
     
     private int updateCommandQueue(String cmd, int id, int stat, int sc) {
+    	System.out.println(cmd + " id=" + id); // DEBUG ID
 		CmdQueueObj o = (CmdQueueObj)cmdqueue.get(0);
 		o.status = stat;
 		cmdqueue.setSize(id + 1);
