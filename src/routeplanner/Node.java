@@ -6,6 +6,7 @@ import java.util.Set;
 public class Node {
 	float x; 
 	float y;
+	int danger = 0;
 	
 	float f_score = 0;
 	float g_score = 0;

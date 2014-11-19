@@ -107,7 +107,7 @@ public class funGetRoute implements Userfunction {
 			List<Node> waypoints = paths.get(from).get(to);
 			for(Node waypoint : waypoints)
 			{
-				engine.assertString("(move-plan " + waynum++ + " " + waypoint.x + " " + waypoint.y + ")");
+				engine.assertString("(move-plan " + waynum++ + " " + waypoint.x + " " + waypoint.y +  " " + waypoint.danger + ")");
 			}
 		}
 			
@@ -199,8 +199,19 @@ public class funGetRoute implements Userfunction {
 				{
 					int first = Integer.parseInt(tokens[1]);
 					int second = Integer.parseInt(tokens[2]);
+					String third = tokens[3];
 					nodes.get(first).neighbors.add(nodes.get(second));
 					nodes.get(second).neighbors.add(nodes.get(first));
+					if(third.equals("D")) // door
+					{
+						nodes.get(first).danger = 1;
+						nodes.get(second).danger = 1;
+					}
+					else if(third.equals("R")) // robot
+					{
+						nodes.get(first).danger = 2;
+						nodes.get(second).danger = 2;
+					}
 				}
 			}
 			

@@ -34,24 +34,24 @@
 ;(assert (goal (waypoint 12)))
 ;(assert (goal (waypoint 15)))
 ;(assert (move 2 2))
-;(get-route "waypoints" 1)
+(get-route "waypoints" 1)
 
-(defrule stop-front
-    (laserbox.detections (value ?front&:(> ?front 200) ?left ?right))
-    =>
-    (SMRTalk "flushcmds")
-    (SMRTalk "stop")
-)
-(defrule stop-front
-    (laserbox.detections (value ?front&:(> ?front 200) ?left ?right))
-    =>
-    (SMRTalk "flushcmds")
-    (SMRTalk "stop")
-)
+;(defrule stop-front
+;    (laserbox.detections (value ?front&:(> ?front 200) ?left ?right))
+;    =>
+;    (SMRTalk "flushcmds")
+;    (SMRTalk "stop")
+;)
+;(defrule stop-front
+;    (laserbox.detections (value ?front&:(> ?front 200) ?left ?right))
+;    =>
+;    (SMRTalk "flushcmds")
+;    (SMRTalk "stop")
+;)
 
 (defrule move-xy
-    ?m<-(move ?x ?y)
-    ?d<-(do-move ?fx ?fy ?th)
+    ?m<-(move ?x ?y ?danger)
+    ?d<-(do-move ?fx ?fy ?th ?fdanger)
     =>
     (printout t "move " ?fx " " ?fy " => " ?x " " ?y crlf)
     ;(bind ?ox (SMRTalk "eval $odox"))
@@ -59,21 +59,35 @@
 	(SMRTalk (str-cat "turn " ?th " \"rad\""))
     (SMRTalk (str-cat "drive :((($odox - " ?x ")*($odox - " ?x ") + ($odoy - " ?y ")*($odoy - " ?y ")) < 0.01)")); | ($irdistfrontmiddle < 1 ))" ))
     (SMRTalk "stop")
-
+    
+	(assert (danger ?fx ?fy ?fdanger ))
     (retract ?m ?d)
 )
 
+(defrule react 
+    (mappose (value ?fx ?fy ?fth))
+    (danger ?fx ?fy ?fth)
+    =>
+    )
+
 (defrule do-plan
     ?p<-(plan (movenum ?movenum)(theta ?fth))
-    ?m0<-(move-plan ?movenum ?x ?y)
-    ?m1<-(move-plan ?movenum1&:(eq ?movenum1 (- ?movenum 1)) ?fx ?fy)
+    ?m0<-(move-plan ?movenum ?x ?y ?danger)
+    ?m1<-(move-plan ?movenum1&:(eq ?movenum1 (- ?movenum 1)) ?fx ?fy ?fdanger)
     (not (do-move ? ? ?))
     =>
     (bind ?th (SMRTalk (str-cat "eval atan2(" (- ?y ?fy) "," (- ?x ?fx) ") - " ?fth)))
     (printout t "plan " ?movenum ": " ?fx " " ?fy " " ?fth " => " ?x " " ?y " " ?th crlf)
     (modify ?p (movenum (+ ?movenum 1))(theta (+ ?fth ?th)))
-    (assert (move ?x ?y))
-    (assert (do-move ?fx ?fy ?th))
+    (assert (move ?x ?y ?danger))
+    (assert (do-move ?fx ?fy ?th ?fdanger))
+    (if (or (eq ?danger 0)(eq ?fdanger 0)) then
+        ()
+     elif (and (eq ?danger 1)(eq ?fdanger 1)) then
+        ()
+     elif (and (eq ?danger 2)(eq ?fdanger 2)) then
+        
+    )
     (retract ?m1)
 )
 
