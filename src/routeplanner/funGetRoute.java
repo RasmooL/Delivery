@@ -107,7 +107,19 @@ public class funGetRoute implements Userfunction {
 			List<Node> waypoints = paths.get(from).get(to);
 			for(Node waypoint : waypoints)
 			{
-				engine.assertString("(move-plan " + waynum++ + " " + waypoint.x + " " + waypoint.y +  " " + waypoint.danger + ")");
+				// Find corresponding node id (key)
+				Set<Entry<Integer, Node>> entries = nodes.entrySet();
+				int key = -1;
+				for(Iterator<Entry<Integer, Node>> i = entries.iterator(); i.hasNext(); )
+				{
+					Entry<Integer, Node> entry = i.next();
+					if(entry.getValue().equals(waypoint))
+					{
+						key = entry.getKey();
+						break;
+					}
+				}
+				engine.assertString("(move-plan " + waynum++ + " " + key + " " + waypoint.x + " " + waypoint.y +  " " + waypoint.danger + ")");
 			}
 		}
 			

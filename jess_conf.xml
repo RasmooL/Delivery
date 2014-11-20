@@ -54,7 +54,7 @@
         <factName>laserbox.detections</factName>
         <name>detections</name>
         <type>double</type>
-        <width>1</width>      
+        <width>6</width>      
       </var>
       <push>
         <time>0.2</time>
