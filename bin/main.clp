@@ -8,20 +8,6 @@
 (assert (plan (movenum 1)(theta 0)))
 (deftemplate goal
     (slot waypoint))
-;(deftemplate laserbox.detections
-;    (multislot value))
-;(defclass odo jessmw.Odometry)
-;(deftemplate smr0.mrc.mrc.odometry
-;    (slot dist)
-;    (slot distLeft)
-;    (slot distRight)
-;    (slot lastupdated)
-;    (slot robot)
-;    (slot theta)
-;    (slot velocity)
-;    (slot OBJECT)
-;    (slot x)
-;    (slot y))
 
 (assert (goal (waypoint 2)))
 ;(assert (goal (waypoint 3)))
@@ -33,21 +19,8 @@
 (assert (goal (waypoint 9)))
 ;(assert (goal (waypoint 12)))
 ;(assert (goal (waypoint 15)))
-;(assert (move 2 2))
-(get-route "waypoints" 1)
-
-;(defrule stop-front
-;    (laserbox.detections (value ?front&:(> ?front 200) ?left ?right))
-;    =>
-;    (SMRTalk "flushcmds")
-;    (SMRTalk "stop")
-;)
-;(defrule stop-front
-;    (laserbox.detections (value ?front&:(> ?front 200) ?left ?right))
-;    =>
-;    (SMRTalk "flushcmds")
-;    (SMRTalk "stop")
-;)
+(defglobal ?*map* = "waypoints")
+(get-route ?*map* 1)
 
 (defglobal ?*cmdnum* = 2)
 ; Keep track of SMR command IDs 
@@ -70,13 +43,13 @@
      elif (and (eq ?danger 1)(eq ?fdanger 1)) then
         (assert (react-door ?fnode ?fx ?fy ?node ?x ?y ?cmdnum))
      elif (and (eq ?danger 2)(eq ?fdanger 2)) then
-        (assert (react-robot ?fnode ?fx ?fy ?node ?x ?y ?cmdnum))
+        (assert (react-robot ?fnode ?fx ?fy ?node ?x ?y ?cmdnum)) ; Reactive behavior for the robot can be implemented in about the same way as the door
     )
     
     (retract ?m ?d)
 )
 
-(defrule react-door
+(defrule react-door-stop
 	 ?d<-(react-door ?fnode ?fx ?fy ?node ?x ?y ?cmdid)
     (CurrentCommand (id ?cmdid))
     (laserbox.detections (value ?df ?dl ?dr ? ? ?))
@@ -102,11 +75,21 @@
         (bind ?th (SMRTalk (str-cat "eval atan2(" (- ?y ?oy) "," (- ?x ?ox) ") - " ?oth)))
 		(MyTalk (str-cat "turn " ?th " \"rad\""))
 	    (MyTalk (str-cat "drive :((($odox - " ?x ")*($odox - " ?x ") + ($odoy - " ?y ")*($odoy - " ?y ")) < 0.01)")); | ($irdistfrontmiddle < 1 ))" ))
-	    (MyTalk "stop")
+	    (bind ?stopid (MyTalk "stop"))
         
         (assert (door-moving))
     	(retract ?d)
     )
+)
+(defrule react-door-replan
+	?d<-(door-moving ?stopid)
+	(CurrentCommand (id ?cmdid))
+	?p<-(plan)
+	=>
+	(retract ?d)
+	
+	(modify ?p (movenum 1))
+	(get-route ?*map* ?node)
 )
 
 
