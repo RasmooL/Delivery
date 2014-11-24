@@ -131,10 +131,12 @@ public class funGetRoute implements Userfunction {
 				// a-star(current, goal)
 				// foreach other_goal in goals != goal && not already calculated
 					// a-star(goal, other_goal) 
-		// Bruteforce TSP problem
-			// foreach circuit in goal graph - runs (n-1)! times
-				// calculate circuit length
-			// choose circuit with smallest length
+		// def tsp_bruteforce(goal_graph)
+				// foreach circuit in goal_graph
+					// if circuit.length < best_length
+						// best_length = circuit.length
+						// best_circuit = circuit
+				// return best_circuit
 		
 		return jess.Funcall.NIL;
 	}
@@ -173,6 +175,7 @@ public class funGetRoute implements Userfunction {
 					{
 						Collections.swap(p, a, b);
 						
+						// reverse sequence a + 1 => n
 						for (++a, b = p.size() - 1; a < b; ++a, --b)
 						{
 							Collections.swap(p, a, b);
