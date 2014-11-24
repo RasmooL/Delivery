@@ -164,20 +164,18 @@ public class funGetRoute implements Userfunction {
 	{
 		for (int a = p.size() - 2; a >= 0; --a)
 		{
+			// if (a, a+1) in lexographical order
 			if (p.get(a) < p.get(a + 1))
 			{
 				for (int b = p.size() - 1;; --b)
 				{
 					if (p.get(b) > p.get(a))
 					{
-						int t = p.get(a);
-						p.set(a, p.get(b));
-						p.set(b, t);
+						Collections.swap(p, a, b);
+						
 						for (++a, b = p.size() - 1; a < b; ++a, --b)
 						{
-							t = p.get(a);
-							p.set(a, p.get(b));
-							p.set(b, t);
+							Collections.swap(p, a, b);
 						}
 					return true;
 					}
