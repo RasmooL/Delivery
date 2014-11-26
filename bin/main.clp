@@ -6,8 +6,22 @@
     (slot movenum)
     (slot theta))
 (assert (plan (movenum 1)(theta 0)))
+
 (deftemplate goal
     (slot waypoint))
+;(defquery get-goals
+;    ?goal<-(goal (waypoint ?wp)))
+;(deffunction get-goals ()
+;    (bind ?g (run-query* get-goals))
+;    (return ?g))
+;(deftemplate goals
+;    (multislot waypoints))
+;(assert (goals (waypoints 2 6 9)))
+(deftemplate home
+    (slot waypoint))
+(assert (home (waypoint 1)))
+
+;(deffunction assert-goals)
 
 (assert (goal (waypoint 2)))
 ;(assert (goal (waypoint 3)))
@@ -18,6 +32,7 @@
 ;(assert (goal (waypoint 8)))
 (assert (goal (waypoint 9)))
 ;(assert (goal (waypoint 12)))
+(assert (goal (waypoint 14	)))
 ;(assert (goal (waypoint 15)))
 (defglobal ?*map* = "waypoints")
 (get-route ?*map* 1)
@@ -35,18 +50,27 @@
     ?d<-(move-from ?fnode ?fx ?fy ?fth ?fdanger)
     =>
     (printout t "move " ?fx " " ?fy " => " ?x " " ?y crlf)
-	(bind ?cmdnum (MyTalk (str-cat "turn " ?th " \"rad\"")))
-    (MyTalk (str-cat "drive :((($odox - " ?x ")*($odox - " ?x ") + ($odoy - " ?y ")*($odoy - " ?y ")) < 0.01)")); | ($irdistfrontmiddle < 1 ))" ))
-    (MyTalk "stop")
+	(bind ?turnnum (MyTalk (str-cat "turn " ?th " \"rad\"")))
+    (MyTalk (str-cat "drive :((($odox - " ?x ")*($odox - " ?x ") + ($odoy - " ?y ")*($odoy - " ?y ")) < 0.008)")); | ($irdistfrontmiddle < 1 ))" ))
+    (bind ?stopnum (MyTalk "stop"))
     (if (or (eq ?danger 0)(eq ?fdanger 0)) then
         
      elif (and (eq ?danger 1)(eq ?fdanger 1)) then
-        (assert (react-door ?fnode ?fx ?fy ?node ?x ?y ?cmdnum))
+        (assert (react-door ?fnode ?fx ?fy ?node ?x ?y ?turnnum))
      elif (and (eq ?danger 2)(eq ?fdanger 2)) then
-        (assert (react-robot ?fnode ?fx ?fy ?node ?x ?y ?cmdnum)) ; Reactive behavior for the robot can be implemented in about the same way as the door
+        (assert (react-robot ?fnode ?fx ?fy ?node ?x ?y ?turnnum)) ; Reactive behavior for the robot can be implemented in about the same way as the door
     )
     
+    (assert (position ?stopnum ?node))
+    
     (retract ?m ?d)
+)
+(defrule check-goals ; When at goal, remove the goal fact
+    ?g<-(goal (waypoint ?goal))
+    (position ?stopnum ?goal)
+    (CurrentCommand (id ?stopnum))
+    =>
+    (retract ?g)
 )
 
 (defrule react-door-stop
@@ -55,7 +79,7 @@
     (laserbox.detections (value ?df ?dl ?dr ? ? ?))
     (not (door-stopped))
     =>
-    (printout t "react-door " ?df " " ?dl " " ?dr crlf)
+    (printout t "react-door-stop " ?df " " ?dl " " ?dr crlf)
     (if (or (> ?df 10)(> ?dl 10)(> ?dr 10)) then
         (MyTalk "flushcmds")
         (MyTalk "stop")
@@ -64,6 +88,7 @@
 )
 (defrule react-door-go
 	(react-door ?fnode ?fx ?fy ?node ?x ?y ?cmdid)	
+    (position ?cmdid ?fnode)
     (laserbox.detections (value ?df ?dl ?dr ? ? ?))
     ?d<-(door-stopped)
     (not (door-moving))
@@ -73,24 +98,34 @@
     (if (and (eq ?df 0.0)(eq ?dl 0.0)(eq ?dr 0.0)) then
         (printout t "in react-door-go " ?df " " ?dl " " ?dr crlf)
         (bind ?th (SMRTalk (str-cat "eval atan2(" (- ?y ?oy) "," (- ?x ?ox) ") - " ?oth)))
+        (-- ?*cmdnum*) ; No idea why I need to do this :(
 		(MyTalk (str-cat "turn " ?th " \"rad\""))
 	    (MyTalk (str-cat "drive :((($odox - " ?x ")*($odox - " ?x ") + ($odoy - " ?y ")*($odoy - " ?y ")) < 0.01)")); | ($irdistfrontmiddle < 1 ))" ))
 	    (bind ?stopid (MyTalk "stop"))
+        (assert (position ?stopid ?node))
         
         (assert (door-moving))
+        (assert (door-replan ?stopid (+ ?oth ?th) ?node))
     	(retract ?d)
+        (facts)
     )
 )
 (defrule react-door-replan
-	?d<-(door-moving ?stopid)
-	(CurrentCommand (id ?cmdid))
-	?p<-(plan)
+	?d<-(door-moving)
+    ?r<-(door-replan ?stopid ?theta ?node)
+	(CurrentCommand (id ?stopid))
+    ?p<-(plan (theta ?fth))
 	=>
-	(retract ?d)
+    (printout t "react-door-replan " ?stopid " " ?theta " " ?node crlf)
 	
-	(modify ?p (movenum 1))
+	(modify ?p (movenum 1)(theta ?theta))
 	(get-route ?*map* ?node)
+    (retract ?d ?r)
 )
+;(defrule print-id
+;    (CurrentCommand (id ?id))
+;    =>
+;    (printout t "command " ?id crlf))
 
 
 (defrule do-plan
@@ -106,6 +141,13 @@
     (assert (move-from ?fnode ?fx ?fy ?fth ?fdanger))
 
     (retract ?m1)
+)
+(defrule remove-last-move-plan
+    (plan (movenum ?movenum)(theta ?fth))
+    ?m0<-(move-plan ?movenum ?node ?x ?y ?danger)
+    (not (move-plan ?movenum1&:(eq ?movenum1 (- ?movenum 1)) ?fnode ?fx ?fy ?fdanger))
+    =>
+    (retract ?m0)
 )
 
 ;(watch facts)

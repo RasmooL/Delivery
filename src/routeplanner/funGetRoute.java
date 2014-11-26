@@ -29,19 +29,28 @@ public class funGetRoute implements Userfunction {
 		// Go through facts and find goal facts
 		Iterator<Fact> facts = engine.listFacts();
 		int numGoals = 0;
+		int home_node = -1;
 		List<Fact> goals = new ArrayList<Fact>();
 		while(facts.hasNext())
 		{
 			Fact fact = facts.next();
-			if(!fact.getName().equals("MAIN::goal"))
-				continue;
-			numGoals++;
-			goals.add(fact);
+			if(fact.getName().equals("MAIN::goal"))
+			{
+				numGoals++;
+				goals.add(fact);
+			}
+			else if(fact.getName().equals("MAIN::home"))
+			{
+				home_node = fact.getSlotValue("waypoint").intValue(context);
+				System.out.println("Home = " + home_node);
+			}
 		}
 		if(numGoals < 1) throw new JessException(functionName, "No goals ", 0);
+		if(home_node == -1) throw new JessException(functionName, "No home node ", 0);
 		
 		loadWaypoints(file);
 		
+		// Set up A* graph
 		AStar as = new AStar(nodes);
 		
 		// Map[goal_from].Map[goal_to].List<Node> -- Symmetric
@@ -51,10 +60,13 @@ public class funGetRoute implements Userfunction {
 			int goal_from = goals.get(g).getSlotValue("waypoint").intValue(context);
 			Map<Integer, List<Node>> inner_map = new HashMap<Integer, List<Node>>();
 			
-			// Start node
+			// Goal node to start node
 			inner_map.put(start_node, as.calculate(goal_from, start_node));
 			
-			// Goal nodes
+			// Goal node to home node
+			inner_map.put(home_node, as.calculate(goal_from, home_node));
+			
+			// To all other goal nodes
 			for(int i = 0; i < numGoals; i++) // i = goal_to
 			{
 				//System.out.println(g + " => " + i);
@@ -64,17 +76,29 @@ public class funGetRoute implements Userfunction {
 			}
 			paths.put(goal_from, inner_map);
 		}
+		// Have to fill paths out 'the other way' too - from start to goals and home
 		Map<Integer, List<Node>> inner_map = new HashMap<Integer, List<Node>>();
 		for(int i = 0; i < numGoals; i++)
 		{
 			int goal_to = goals.get(i).getSlotValue("waypoint").intValue(context);
-			inner_map.put(goal_to, as.calculate(start_node, goal_to));
+			inner_map.put(goal_to, as.calculate(start_node, goal_to)); // Start to goal	
 		}
+		inner_map.put(home_node, as.calculate(start_node, home_node)); // Start to home
 		paths.put(start_node, inner_map);
+		// And from goals to home
+		inner_map = new HashMap<Integer, List<Node>>();
+		for(int i = 0; i < numGoals; i++)
+		{
+			int goal_to = goals.get(i).getSlotValue("waypoint").intValue(context);
+			inner_map.put(goal_to, as.calculate(home_node, goal_to)); // Home to goal
+		}
+		inner_map.put(start_node, as.calculate(home_node, start_node)); // Home to start
+		paths.put(home_node, inner_map);
 		System.out.println(paths.toString());
 		
 		// TSP bruteforce, super slow with n>10 :O
 		List<Integer> goalList = new ArrayList<Integer>(paths.keySet());
+		if(start_node != home_node) goalList.remove((Integer)home_node); // This happens when re-planning mid-route
 		Collections.sort(goalList);
 		List<Integer> bestRoute = null;
 		//Integer[] bestRoute = null;
@@ -84,17 +108,21 @@ public class funGetRoute implements Userfunction {
 		do
 		{
 			if(!goalList.get(0).equals(start_node)) continue; // We only want permutations that start at our start node
-			newLength = routeLength(paths, goalList);
-			//System.out.println(Arrays.toString(goalArray) + " = " + newLength); // Prints all permutations (slow!)
+			// Add the home node to the route permutation
+			List<Integer> goalListHome = new ArrayList<Integer>(goalList);
+			goalListHome.add(home_node);
+			System.out.println(goalListHome.toString());
+			newLength = routeLength(paths, goalListHome);
+			System.out.println(goalListHome.toString() + " = " + newLength); // Prints all permutations (slow!)
 			if(newLength < currentLength)
 			{
-				bestRoute = new ArrayList<Integer>(goalList);
+				bestRoute = goalListHome;
 				currentLength = newLength;
 			}
 		}
 		while(next_permutation(goalList));
 		long endTime = System.currentTimeMillis();
-		bestRoute.add(bestRoute.get(0)); // End = start
+		//bestRoute.add(homeNode); // End = home
 		System.out.println("Best route: " + bestRoute.toString() + " = " + currentLength + "(" + (endTime-startTime) + " ms)");
 		
 		int waynum = 0;
@@ -139,14 +167,14 @@ public class funGetRoute implements Userfunction {
 		return jess.Funcall.NIL;
 	}
 	
-	// Calculates route length, ending back at the first node
+	// Calculates route length
 	float routeLength(Map<Integer, Map<Integer, List<Node>>> paths, List<Integer> route)
 	{
 		float length = 0;
-		for(int goal_num = 0; goal_num < route.size(); goal_num++)
+		for(int goal_num = 0; goal_num < route.size() - 1; goal_num++)
 		{
 			int fromNode = route.get(goal_num);
-			int toNode = route.get((goal_num + 1) % route.size());
+			int toNode = route.get((goal_num + 1));
 			List<Node> path = paths.get(fromNode).get(toNode);
 			
 			Node curNode = nodes.get(fromNode);
