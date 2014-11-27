@@ -1,5 +1,7 @@
 (load-package jessmw.pkg)
 (load-package routeplanner.pkg)
+(load-package GUI.pkg)
+(GUI)
 (SMRConnect jess_conf.xml)
 
 (deftemplate plan
@@ -32,8 +34,8 @@
 ;(assert (goal (waypoint 8)))
 (assert (goal (waypoint 9)))
 ;(assert (goal (waypoint 12)))
-(assert (goal (waypoint 14	)))
-;(assert (goal (waypoint 15)))
+(assert (goal (waypoint 13)))
+(assert (goal (waypoint 15)))
 (defglobal ?*map* = "waypoints")
 (get-route ?*map* 1)
 
@@ -77,28 +79,27 @@
 	 ?d<-(react-door ?fnode ?fx ?fy ?node ?x ?y ?cmdid)
     (CurrentCommand (id ?cmdid))
     (laserbox.detections (value ?df ?dl ?dr ? ? ?))
-    (not (door-stopped))
+    (not (door-stopped ?))
     =>
-    (printout t "react-door-stop " ?df " " ?dl " " ?dr crlf)
+    (printout t "react-door-stop " ?fnode " " ?cmdid " " ?df " " ?dl " " ?dr crlf)
     (if (or (> ?df 10)(> ?dl 10)(> ?dr 10)) then
         (MyTalk "flushcmds")
         (MyTalk "stop")
-        (assert (door-stopped))
+        (assert (door-stopped ?cmdid))
     )
 )
 (defrule react-door-go
 	(react-door ?fnode ?fx ?fy ?node ?x ?y ?cmdid)	
-    (position ?cmdid ?fnode)
     (laserbox.detections (value ?df ?dl ?dr ? ? ?))
-    ?d<-(door-stopped)
+    ?d<-(door-stopped ?cmdid)
     (not (door-moving))
     (smr0.mrc.mrc.odometry (x ?ox)(y ?oy)(theta ?oth))
     =>
     (printout t "react-door-go " ?df " " ?dl " " ?dr crlf)
-    (if (and (eq ?df 0.0)(eq ?dl 0.0)(eq ?dr 0.0)) then
+    (if (and (eq ?df 0.0)) then
         (printout t "in react-door-go " ?df " " ?dl " " ?dr crlf)
         (bind ?th (SMRTalk (str-cat "eval atan2(" (- ?y ?oy) "," (- ?x ?ox) ") - " ?oth)))
-        (-- ?*cmdnum*) ; No idea why I need to do this :(
+        (-- ?*cmdnum*)
 		(MyTalk (str-cat "turn " ?th " \"rad\""))
 	    (MyTalk (str-cat "drive :((($odox - " ?x ")*($odox - " ?x ") + ($odoy - " ?y ")*($odoy - " ?y ")) < 0.01)")); | ($irdistfrontmiddle < 1 ))" ))
 	    (bind ?stopid (MyTalk "stop"))
@@ -122,13 +123,14 @@
 	(get-route ?*map* ?node)
     (retract ?d ?r)
 )
-;(defrule print-id
-;    (CurrentCommand (id ?id))
-;    =>
-;    (printout t "command " ?id crlf))
+(defrule print-id
+    (CurrentCommand (id ?id))
+    =>
+    (printout t "command " ?id crlf))
 
 
 (defrule do-plan
+    ?s<-(start)
     ?p<-(plan (movenum ?movenum)(theta ?fth))
     ?m0<-(move-plan ?movenum ?node ?x ?y ?danger)
     ?m1<-(move-plan ?movenum1&:(eq ?movenum1 (- ?movenum 1)) ?fnode ?fx ?fy ?fdanger)

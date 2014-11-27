@@ -45,7 +45,7 @@ public class funGetRoute implements Userfunction {
 				System.out.println("Home = " + home_node);
 			}
 		}
-		if(numGoals < 1) throw new JessException(functionName, "No goals ", 0);
+		//if(numGoals < 1) throw new JessException(functionName, "No goals ", 0);
 		if(home_node == -1) throw new JessException(functionName, "No home node ", 0);
 		
 		loadWaypoints(file);
