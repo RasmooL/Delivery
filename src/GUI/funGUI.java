@@ -511,6 +511,13 @@ public class funGUI extends JFrame implements Userfunction {
 					chckbxWP14.setEnabled(true);
 					chckbxWP15.setEnabled(true);
 					chckbxWP16.setEnabled(true);
+					
+					try {
+						engine.assertString("(pause)");
+					} catch (JessException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
 				}
 			}
 		});

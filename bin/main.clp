@@ -48,6 +48,7 @@
 )
 
 (defrule move-xy
+    ?s<-(start)
     ?m<-(move ?node ?x ?y ?th ?danger)
     ?d<-(move-from ?fnode ?fx ?fy ?fth ?fdanger)
     =>
@@ -73,6 +74,15 @@
     (CurrentCommand (id ?stopnum))
     =>
     (retract ?g)
+)
+(defrule do-pause
+    ?p<-(pause)
+    (position ?stopnum ?wp)
+    (CurrentCommand (id ?stopnum))
+    =>
+    (MyTalk "flushcmds")
+    (MyTalk "stop")
+    (retract ?p)
 )
 
 (defrule react-door-stop
@@ -130,7 +140,6 @@
 
 
 (defrule do-plan
-    ?s<-(start)
     ?p<-(plan (movenum ?movenum)(theta ?fth))
     ?m0<-(move-plan ?movenum ?node ?x ?y ?danger)
     ?m1<-(move-plan ?movenum1&:(eq ?movenum1 (- ?movenum 1)) ?fnode ?fx ?fy ?fdanger)
