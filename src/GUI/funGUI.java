@@ -4,7 +4,6 @@ import jess.*;
 import jessmw.*;
 
 import java.lang.Thread;
-
 import java.util.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -37,6 +36,8 @@ public class funGUI extends JFrame implements Userfunction {
 	static Odometry odo;
 	JPanel panel, waypoints, goStop;
 	JLabel lblETA;
+	static JLabel txtETA;
+	static double totDist;
 	
 	int min = 0, min1 = 0, min2 = 0;
 	int sec = 0, sec1 = 0, sec2 = 0;
@@ -64,7 +65,6 @@ public class funGUI extends JFrame implements Userfunction {
 	long start_time, end_time;
 	double oldX, newX, oldY, newY, speed;
 	private JPanel Delivery;
-	static JLabel txtETA;
 	
 	public double getSpeed() {
 		return speed;
@@ -94,33 +94,6 @@ public class funGUI extends JFrame implements Userfunction {
 	public String getName() {
 		// TODO Auto-generated method stub
 		return functionName;
-	}
-	
-	
-	// Function to update the position of robot
-	double updateETA() {
-		// Update coordinates of robot
-		if(odo == null)
-		{
-			//System.out.println("Odo null");
-			return Double.MAX_VALUE;
-		}
-		setNewX(odo.getX());
-		setNewY(odo.getY());
-		setSpeed(odo.getVelocity());
-		return getNewX();
-	}
-	
-	// Function to calculate the estimated time to arrive next waypoint
-	double calcTimeToArrival(double x1, double y1, double x2, double y2, double spd){
-		 double dist = Math.sqrt((x1-x2)*(x1-x2)+(y1-y2)*(y1-y2));
-		 double time = 100;
-		 if(spd == 0){
-			 JOptionPane.showMessageDialog(getParent(), "thank you for using java");			 
-		 } else {
-			 time = dist/spd;
-		 }
-		 return time;
 	}
 	
 	/**
@@ -469,6 +442,7 @@ public class funGUI extends JFrame implements Userfunction {
 					SwingUtilities.updateComponentTreeUI(btnStart);
 					try {
 						engine.assertString("(start)");
+						start_time = System.nanoTime();
 					} catch (JessException e1) {
 						// TODO Auto-generated catch block
 						// e1.printStackTrace();
@@ -721,7 +695,7 @@ public class funGUI extends JFrame implements Userfunction {
 	}
 
 	@Override
-	public Value call(ValueVector vv, Context c) throws JessException {
+	public Value call(ValueVector vv, final Context c) throws JessException {
 		
 		
 		engine = c.getEngine();
@@ -739,8 +713,19 @@ public class funGUI extends JFrame implements Userfunction {
 			protected Void doInBackground() throws Exception {
 				while(true)
 				{
-					double eta = updateETA();
-					publish(eta);
+					setSpeed(odo.getVelocity());
+					end_time = System.nanoTime();
+					double difference = (end_time - start_time)/1e6;
+					Iterator<Fact> itrFact2 = engine.listFacts();
+					while(itrFact2.hasNext())
+					{
+						Fact tmpFact2 = itrFact2.next();
+						if (tmpFact2.getName().equals("best")) {
+							totDist = (double)tmpFact2.getSlotValue("dist").floatValue(c);
+						}
+					}
+					double totTime = totDist/getSpeed();
+					publish(totTime - difference);
 				}
 			}
 			
@@ -750,7 +735,7 @@ public class funGUI extends JFrame implements Userfunction {
 				double mostRecent = chunks.get(chunks.size() - 1);
 				System.out.println("process");
 				
-				txtETA.setText("Fuck java: " + mostRecent);
+				txtETA.setText(String.valueOf(mostRecent));
 			}
 		}.execute();
 		
