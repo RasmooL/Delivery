@@ -31,6 +31,7 @@ public class funGUI extends JFrame implements Userfunction {
 	private String functionName = "GUI";
 	private JPanel contentPane;
 	static Rete engine;
+	static Odometry odo;
 	JPanel panel, waypoints, goStop;
 	JLabel lblETA;
 	
@@ -57,7 +58,6 @@ public class funGUI extends JFrame implements Userfunction {
 			lblAD9, lblAD10, lblAD11, lblAD12,
 			lblAD13, lblAD14, lblAD15, lblAD16;
 	
-	Odometry odo;
 	long start_time, end_time;
 	double oldX, newX, oldY, newY, speed;
 	private JPanel Delivery;
@@ -96,11 +96,17 @@ public class funGUI extends JFrame implements Userfunction {
 	// Function to update the position of robot
 	void updateETA(){
 		// Update coordinates of robot
+		if(odo == null)
+		{
+			System.out.println("Odo null");
+			return;
+		}
 		setNewX(odo.getX());
 		setNewY(odo.getY());
 		setSpeed(odo.getVelocity());
 		count++;
 		txtETA.setText(String.valueOf(count));
+		System.out.println("Count: " + count);
 	}
 	
 	// Function to calculate the estimated time to arrive next waypoint
@@ -717,11 +723,7 @@ public class funGUI extends JFrame implements Userfunction {
 		
 		
 		engine = c.getEngine();
-		if(engine.equals(null)){
-			System.out.println("fuck you java");
-			System.exit(1);
-		}
-		Iterator<Fact> itrFact = engine.listFacts();;
+		Iterator<Fact> itrFact = engine.listFacts();
 		while(itrFact.hasNext())
 		{
 			Fact tmpFact = itrFact.next();
@@ -739,7 +741,10 @@ public class funGUI extends JFrame implements Userfunction {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				updateETA();
+				while(true)
+				{
+					updateETA();
+				}
 			}
 		});
 		

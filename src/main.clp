@@ -76,12 +76,13 @@
 )
 (defrule do-pause
     ?p<-(pause)
+    ?s<-(start)
     (position ?stopnum ?wp)
     (CurrentCommand (id ?stopnum))
     =>
     (MyTalk "flushcmds")
     (MyTalk "stop")
-    (retract ?p)
+    (retract ?p ?s)
 )
 
 (defrule react-door-stop
@@ -139,6 +140,7 @@
 
 
 (defrule do-plan
+    (start)
     ?p<-(plan (movenum ?movenum)(theta ?fth))
     ?m0<-(move-plan ?movenum ?node ?x ?y ?danger)
     ?m1<-(move-plan ?movenum1&:(eq ?movenum1 (- ?movenum 1)) ?fnode ?fx ?fy ?fdanger)
