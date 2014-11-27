@@ -722,6 +722,7 @@ public class funGUI extends JFrame implements Userfunction {
 						Fact tmpFact2 = itrFact2.next();
 						if (tmpFact2.getName().equals("best")) {
 							totDist = (double)tmpFact2.getSlotValue("dist").floatValue(c);
+							engine.retract(tmpFact2);
 						}
 					}
 					double totTime = totDist/getSpeed();
