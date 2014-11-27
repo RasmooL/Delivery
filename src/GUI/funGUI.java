@@ -733,9 +733,7 @@ public class funGUI extends JFrame implements Userfunction {
 			@Override
 			protected void process(List<Double> chunks)
 			{
-				double mostRecent = chunks.get(chunks.size() - 1);
-				System.out.println("process");
-				
+				double mostRecent = chunks.get(chunks.size() - 1);				
 				txtETA.setText(String.valueOf(mostRecent));
 			}
 		}.execute();
