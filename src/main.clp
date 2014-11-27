@@ -48,7 +48,6 @@
 )
 
 (defrule move-xy
-    ?s<-(start)
     ?m<-(move ?node ?x ?y ?th ?danger)
     ?d<-(move-from ?fnode ?fx ?fy ?fth ?fdanger)
     =>
