@@ -713,20 +713,24 @@ public class funGUI extends JFrame implements Userfunction {
 			protected Void doInBackground() throws Exception {
 				while(true)
 				{
+					System.out.println("loop");
 					setSpeed(odo.getVelocity());
 					end_time = System.nanoTime();
-					double difference = (end_time - start_time)/1e6;
+					double difference = (end_time - start_time)/1e3;
 					Iterator<Fact> itrFact2 = engine.listFacts();
 					while(itrFact2.hasNext())
 					{
 						Fact tmpFact2 = itrFact2.next();
-						if (tmpFact2.getName().equals("route-length")) {
-							totDist = (double)tmpFact2.getSlotValue("dist").floatValue(c);
+						System.out.println(tmpFact2.toString());
+						if (tmpFact2.getName().equals("MAIN::route-length")) {
+							totDist = (double)tmpFact2.get(1).floatValue(c);
+							System.out.println("totDist: " + totDist);
 							engine.retract(tmpFact2);
+							break;
 						}
 					}
 					double totTime = totDist/getSpeed();
-					publish(totTime - difference);
+					publish(totTime);
 				}
 			}
 			

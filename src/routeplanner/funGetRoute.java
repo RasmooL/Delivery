@@ -124,6 +124,7 @@ public class funGetRoute implements Userfunction {
 		long endTime = System.currentTimeMillis();
 		//bestRoute.add(homeNode); // End = home
 		System.out.println("Best route: " + bestRoute.toString() + " = " + currentLength + "(" + (endTime-startTime) + " ms)");
+		engine.assertString("(route-length " + currentLength + ")");
 		
 		int waynum = 0;
 		for(int num = 1; num < bestRoute.size(); num++)
