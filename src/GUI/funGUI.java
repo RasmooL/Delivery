@@ -24,6 +24,7 @@ import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JButton;
+import javax.swing.JTextField;
 
 public class funGUI extends JFrame implements Userfunction {
 	private static final long serialVersionUID = 1L;
@@ -31,7 +32,7 @@ public class funGUI extends JFrame implements Userfunction {
 	private JPanel contentPane;
 	static Rete engine;
 	JPanel panel, waypoints, goStop;
-	JLabel lblETA, lblMinSec;
+	JLabel lblETA;
 	
 	int min = 0, min1 = 0, min2 = 0;
 	int sec = 0, sec1 = 0, sec2 = 0;
@@ -60,6 +61,7 @@ public class funGUI extends JFrame implements Userfunction {
 	long start_time, end_time;
 	double oldX, newX, oldY, newY, speed;
 	private JPanel Delivery;
+	private JTextField txtETA;
 	
 	public double getSpeed() {
 		return speed;
@@ -90,13 +92,15 @@ public class funGUI extends JFrame implements Userfunction {
 		// TODO Auto-generated method stub
 		return functionName;
 	}
-	
+	int count = 0;
 	// Function to update the position of robot
 	void updateETA(){
 		// Update coordinates of robot
 		setNewX(odo.getX());
 		setNewY(odo.getY());
-		setSpeed(odo.getVelocity());		
+		setSpeed(odo.getVelocity());
+		count++;
+		txtETA.setText(String.valueOf(count));
 	}
 	
 	// Function to calculate the estimated time to arrive next waypoint
@@ -521,11 +525,11 @@ public class funGUI extends JFrame implements Userfunction {
 		lblETA.setBounds(10, 50, 130, 15);
 		goStop.add(lblETA);
 		
-		lblMinSec = new JLabel(min1 + min2 + " : " + sec1 + sec2);
-		lblMinSec.setFont(new Font("Times New Roman", Font.PLAIN, 15));
-		lblMinSec.setHorizontalAlignment(SwingConstants.CENTER);
-		lblMinSec.setBounds(0, 70, 150, 30);
-		goStop.add(lblMinSec);
+		txtETA = new JTextField(" ");
+		txtETA.setHorizontalAlignment(SwingConstants.CENTER);
+		txtETA.setBounds(20, 77, 114, 19);
+		goStop.add(txtETA);
+		txtETA.setColumns(10);
 		
 		Delivery = new JPanel();
 		Delivery.setBounds(10, 130, 405, 110);
@@ -728,6 +732,7 @@ public class funGUI extends JFrame implements Userfunction {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				updateETA();
 			}
 		});
 		
