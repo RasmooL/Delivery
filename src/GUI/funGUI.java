@@ -3,6 +3,8 @@ package GUI;
 import jess.*;
 import jessmw.*;
 
+import java.lang.Thread;
+
 import java.util.*;
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -25,6 +27,7 @@ import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.JButton;
 import javax.swing.JTextField;
+import javax.swing.SwingWorker;
 
 public class funGUI extends JFrame implements Userfunction {
 	private static final long serialVersionUID = 1L;
@@ -61,7 +64,7 @@ public class funGUI extends JFrame implements Userfunction {
 	long start_time, end_time;
 	double oldX, newX, oldY, newY, speed;
 	private JPanel Delivery;
-	private JTextField txtETA;
+	static JLabel txtETA;
 	
 	public double getSpeed() {
 		return speed;
@@ -92,21 +95,20 @@ public class funGUI extends JFrame implements Userfunction {
 		// TODO Auto-generated method stub
 		return functionName;
 	}
-	int count = 0;
+	
+	
 	// Function to update the position of robot
-	void updateETA(){
+	double updateETA() {
 		// Update coordinates of robot
 		if(odo == null)
 		{
-			System.out.println("Odo null");
-			return;
+			//System.out.println("Odo null");
+			return Double.MAX_VALUE;
 		}
 		setNewX(odo.getX());
 		setNewY(odo.getY());
 		setSpeed(odo.getVelocity());
-		count++;
-		txtETA.setText(String.valueOf(count));
-		System.out.println("Count: " + count);
+		return getNewX();
 	}
 	
 	// Function to calculate the estimated time to arrive next waypoint
@@ -538,11 +540,11 @@ public class funGUI extends JFrame implements Userfunction {
 		lblETA.setBounds(10, 50, 130, 15);
 		goStop.add(lblETA);
 		
-		txtETA = new JTextField(" ");
+		txtETA = new JLabel("00:00:00");
 		txtETA.setHorizontalAlignment(SwingConstants.CENTER);
 		txtETA.setBounds(20, 77, 114, 19);
 		goStop.add(txtETA);
-		txtETA.setColumns(10);
+		//txtETA.setColumns(10);
 		
 		Delivery = new JPanel();
 		Delivery.setBounds(10, 130, 405, 110);
@@ -727,10 +729,30 @@ public class funGUI extends JFrame implements Userfunction {
 		while(itrFact.hasNext())
 		{
 			Fact tmpFact = itrFact.next();
-			if(tmpFact.getName().equals("MAIN::smr0.mrc.mrc.Odometry")){
+			if(tmpFact.getName().equals("MAIN::smr0.mrc.mrc.odometry")){
 				odo = (Odometry)tmpFact.getSlotValue("OBJECT").javaObjectValue(c);
 			}
 		}
+		
+		new SwingWorker<Void, Double>() {
+			@Override
+			protected Void doInBackground() throws Exception {
+				while(true)
+				{
+					double eta = updateETA();
+					publish(eta);
+				}
+			}
+			
+			@Override
+			protected void process(List<Double> chunks)
+			{
+				double mostRecent = chunks.get(chunks.size() - 1);
+				System.out.println("process");
+				
+				txtETA.setText("Fuck java: " + mostRecent);
+			}
+		}.execute();
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -740,10 +762,6 @@ public class funGUI extends JFrame implements Userfunction {
 					frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 				} catch (Exception e) {
 					e.printStackTrace();
-				}
-				while(true)
-				{
-					updateETA();
 				}
 			}
 		});

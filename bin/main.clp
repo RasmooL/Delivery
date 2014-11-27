@@ -1,8 +1,8 @@
 (load-package jessmw.pkg)
 (load-package routeplanner.pkg)
 (load-package GUI.pkg)
-(GUI)
 (SMRConnect jess_conf.xml)
+(GUI)
 
 (deftemplate plan
     (slot movenum)
