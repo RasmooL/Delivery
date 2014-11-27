@@ -720,7 +720,7 @@ public class funGUI extends JFrame implements Userfunction {
 					while(itrFact2.hasNext())
 					{
 						Fact tmpFact2 = itrFact2.next();
-						if (tmpFact2.getName().equals("best")) {
+						if (tmpFact2.getName().equals("route-length")) {
 							totDist = (double)tmpFact2.getSlotValue("dist").floatValue(c);
 							engine.retract(tmpFact2);
 						}
