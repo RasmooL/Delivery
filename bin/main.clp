@@ -2,7 +2,7 @@
 (load-package routeplanner.pkg)
 (load-package GUI.pkg)
 (SMRConnect jess_conf.xml)
-(GUI)
+(GUIRevise)
 
 (deftemplate plan
     (slot movenum)
@@ -25,17 +25,17 @@
 
 ;(deffunction assert-goals)
 
-(assert (goal (waypoint 2)))
+;(assert (goal (waypoint 2)))
 ;(assert (goal (waypoint 3)))
 ;(assert (goal (waypoint 4)))
 ;(assert (goal (waypoint 5)))
-(assert (goal (waypoint 6)))
+;(assert (goal (waypoint 6)))
 ;(assert (goal (waypoint 7)))
 ;(assert (goal (waypoint 8)))
-(assert (goal (waypoint 9)))
+;(assert (goal (waypoint 9)))
 ;(assert (goal (waypoint 12)))
-(assert (goal (waypoint 13)))
-(assert (goal (waypoint 15)))
+;(assert (goal (waypoint 13)))
+;(assert (goal (waypoint 15)))
 (defglobal ?*map* = "waypoints")
 (get-route ?*map* 1)
 
