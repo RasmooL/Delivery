@@ -32,7 +32,7 @@ public class funGUIRevise extends JFrame implements Userfunction {
 	private JPanel contentPane;
 	JPanel panel, waypoints, goStop, delivery;
 	
-	long start_time, end_time;
+	long start_time = 0, end_time = 0;
 	double speed;
 	int numCheckBox = 5;
 	
@@ -87,7 +87,7 @@ public class funGUIRevise extends JFrame implements Userfunction {
 		goal.setHorizontalAlignment(SwingConstants.CENTER);
 		goal.setBounds(5, 5, 230, 25);
 		waypoints.add(goal);
-				
+
 		checkBoxes = new JCheckBox[numCheckBox];
 		for(int i = 0; i < numCheckBox; i++) {
 			checkBoxes[i] = new JCheckBox("Goal " + (i+1));
@@ -118,8 +118,10 @@ public class funGUIRevise extends JFrame implements Userfunction {
 					try {
 						engine.assertString("(start)");
 						start_time = System.nanoTime();
+						txtETA.setVisible(true);
 						System.out.println("Assert: (start)");
 						System.out.println("start_time: " + start_time);
+						timerWorker.execute();
 					} catch (JessException e1) {
 						// TODO Auto-generated catch block
 						// e1.printStackTrace();
@@ -145,6 +147,7 @@ public class funGUIRevise extends JFrame implements Userfunction {
 				if(btnPause.isSelected()) {
 					UIManager.put("ToggleButton.select", Color.RED);
 					SwingUtilities.updateComponentTreeUI(btnPause);
+					timerWorker.cancel(true);
 					for(int i = 0; i < numCheckBox; i++) {
 						checkBoxes[i].setEnabled(true);
 					}
@@ -169,6 +172,7 @@ public class funGUIRevise extends JFrame implements Userfunction {
 		txtETA = new JLabel("00:00:00");
 		txtETA.setHorizontalAlignment(SwingConstants.CENTER);
 		txtETA.setBounds(5, 65, 180, 25);
+		txtETA.setVisible(false);
 		goStop.add(txtETA);
 		//txtETA.setColumns(10);
 		
@@ -179,10 +183,20 @@ public class funGUIRevise extends JFrame implements Userfunction {
 		delivery.setLayout(null);
 		
 		btnAccept = new JButton("Accept");
+		btnAccept.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Display ADLabel of reached goal and set the text of ADLabel as "Accepted"
+			}
+		});
 		btnAccept.setBounds(5, 50, 90, 25);
 		delivery.add(btnAccept);
 		
 		btnDecline = new JButton("Decline");
+		btnDecline.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				// Display ADLabel of reached goal and set the text of ADLabel as "Declined"
+			}
+		});
 		btnDecline.setBounds(5, 95, 90, 25);
 		delivery.add(btnDecline);
 		
@@ -216,8 +230,6 @@ public class funGUIRevise extends JFrame implements Userfunction {
 
 	@Override
 	public Value call(ValueVector vv, final Context c) throws JessException {
-		
-		
 		engine = c.getEngine();
 		Iterator<Fact> itrFact = engine.listFacts();
 		while(itrFact.hasNext())
@@ -227,40 +239,6 @@ public class funGUIRevise extends JFrame implements Userfunction {
 				odo = (Odometry)tmpFact.getSlotValue("OBJECT").javaObjectValue(c);
 			}
 		}
-		
-		new SwingWorker<Void, Double>() {
-			@Override
-			protected Void doInBackground() throws Exception {
-				while(true)
-				{
-					System.out.println("loop");
-					setSpeed(odo.getVelocity());
-					end_time = System.nanoTime();
-					double difference = (end_time - start_time)/1e3;
-					Iterator<Fact> itrFact2 = engine.listFacts();
-					while(itrFact2.hasNext())
-					{
-						Fact tmpFact2 = itrFact2.next();
-						System.out.println(tmpFact2.toString());
-						if (tmpFact2.getName().equals("MAIN::route-length")) {
-							totDist = (double)tmpFact2.get(1).floatValue(c);
-							System.out.println("totDist: " + totDist);
-							engine.retract(tmpFact2);
-							break;
-						}
-					}
-					double totTime = totDist/getSpeed();
-					publish(totTime);
-				}
-			}
-			
-			@Override
-			protected void process(List<Double> chunks)
-			{
-				double mostRecent = chunks.get(chunks.size() - 1);				
-				txtETA.setText(String.valueOf(mostRecent));
-			}
-		}.execute();
 		
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
@@ -276,6 +254,43 @@ public class funGUIRevise extends JFrame implements Userfunction {
 		
 		return jess.Funcall.NIL;
 	}
+	
+	SwingWorker<Void, Double> timerWorker = new SwingWorker<Void, Double>() {
+		@Override
+		protected Void doInBackground() throws Exception {
+			while(true) {
+				System.out.println("loop");
+				setSpeed(odo.getVelocity());
+				end_time = System.nanoTime();
+				double difference = (end_time - start_time)/1e6;
+				/*
+			Iterator<Fact> itrFact2 = engine.listFacts();
+			while(itrFact2.hasNext())
+			{
+				Fact tmpFact2 = itrFact2.next();
+				System.out.println(tmpFact2.toString());
+				if (tmpFact2.getName().equals("MAIN::route-length")) {
+					totDist = (double)tmpFact2.get(1).floatValue(c);
+					System.out.println("totDist: " + totDist);
+					engine.retract(tmpFact2);
+					break;
+				}
+			}
+				 */
+				//double totTime = totDist/getSpeed();
+				System.out.println("end_time: " + end_time);
+				publish(difference);
+			}
+		}
+		
+		@Override
+		protected void process(List<Double> chunks)
+		{
+			double mostRecent = chunks.get(chunks.size() - 1);				
+			txtETA.setText(String.valueOf(mostRecent));
+		}
+		
+	};
 	
 	private class BoxListner implements ActionListener {
 		private final int i;
