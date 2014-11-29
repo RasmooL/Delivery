@@ -35,6 +35,7 @@ public class funGUIRevise extends JFrame implements Userfunction {
 	long start_time = 0, end_time = 0;
 	double speed;
 	int numCheckBox = 5;
+	int[] goals = {2, 6, 9, 13, 15};
 	
 	JLabel goal;
 	JCheckBox[] checkBoxes;
@@ -259,26 +260,27 @@ public class funGUIRevise extends JFrame implements Userfunction {
 		@Override
 		protected Void doInBackground() throws Exception {
 			while(true) {
-				System.out.println("loop");
+				//System.out.println("loop");
 				setSpeed(odo.getVelocity());
+				//System.out.println("speed: " + speed);
 				end_time = System.nanoTime();
 				double difference = (end_time - start_time)/1e6;
 				/*
-			Iterator<Fact> itrFact2 = engine.listFacts();
-			while(itrFact2.hasNext())
-			{
-				Fact tmpFact2 = itrFact2.next();
-				System.out.println(tmpFact2.toString());
-				if (tmpFact2.getName().equals("MAIN::route-length")) {
-					totDist = (double)tmpFact2.get(1).floatValue(c);
-					System.out.println("totDist: " + totDist);
-					engine.retract(tmpFact2);
-					break;
+				Iterator<Fact> itrFact2 = engine.listFacts();
+				while(itrFact2.hasNext())
+				{
+					Fact tmpFact2 = itrFact2.next();
+					System.out.println(tmpFact2.toString());
+					if (tmpFact2.getName().equals("MAIN::route-length")) {
+						totDist = tmpFact2.get(1).floatValue(engine.getGlobalContext());
+						System.out.println("totDist: " + totDist);
+						engine.retract(tmpFact2);
+						break;
+					}
 				}
-			}
-				 */
+				*/
 				//double totTime = totDist/getSpeed();
-				System.out.println("end_time: " + end_time);
+				//System.out.println("end_time: " + end_time);
 				publish(difference);
 			}
 		}
@@ -303,7 +305,9 @@ public class funGUIRevise extends JFrame implements Userfunction {
 			if(checkBoxes[i].isSelected()) {
 				System.out.println("Goal " + (i+1) + " checked!");
 				try {
-					//engine.assertString("(goal (waypoint " + i + "))");
+					engine.assertString("(goal (waypoint " + goals[i] + "))");
+					System.out.println("Assert: (goal (waypoint " + goals[i] + "))");
+					/*
 					switch (i) {
 					case 0:
 						engine.assertString("(goal (waypoint 2))");
@@ -326,6 +330,7 @@ public class funGUIRevise extends JFrame implements Userfunction {
 						System.out.println("Assert: (goal (waypoint 15))");
 						break;
 					}
+					*/
 				} catch (JessException e1) {
 					e1.printStackTrace();
 				}						
@@ -334,7 +339,9 @@ public class funGUIRevise extends JFrame implements Userfunction {
 			} else {
 				System.out.println("Goal " + (i+1) + " de-checked!");
 				try {
-					//engine.retractString("(goal (waypoint " + i + "))");
+					engine.retractString("(goal (waypoint " + goals[i] + "))");
+					System.out.println("Retract: (goal (waypoint " + goals[i] + "))");
+					/*
 					switch (i) {
 					case 0:
 						engine.retractString("(goal (waypoint 2))");
@@ -356,7 +363,9 @@ public class funGUIRevise extends JFrame implements Userfunction {
 						engine.retractString("(goal (waypoint 15))");
 						System.out.println("Retract: (goal (waypoint 15))");
 						break;
+						
 					}
+					*/
 				} catch (JessException e2) {
 					e2.printStackTrace();
 				}
