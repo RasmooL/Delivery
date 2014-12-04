@@ -51,7 +51,7 @@
     ?m<-(move ?node ?x ?y ?th ?danger)
     ?d<-(move-from ?fnode ?fx ?fy ?fth ?fdanger)
     =>
-    (printout t "move " ?fx " " ?fy " => " ?x " " ?y crlf)
+    ;(printout t "move " ?fx " " ?fy " => " ?x " " ?y crlf)
 	(bind ?turnnum (MyTalk (str-cat "turn " ?th " \"rad\"")))
     (MyTalk (str-cat "drive :((($odox - " ?x ")*($odox - " ?x ") + ($odoy - " ?y ")*($odoy - " ?y ")) < 0.008)")); | ($irdistfrontmiddle < 1 ))" ))
     (bind ?stopnum (MyTalk "stop"))
@@ -147,7 +147,7 @@
     (not (do-move ? ? ?))
     =>
     (bind ?th (SMRTalk (str-cat "eval atan2(" (- ?y ?fy) "," (- ?x ?fx) ") - " ?fth)))
-    (printout t "plan " ?movenum ": " ?fnode " " ?fx " " ?fy " " ?fth " => " ?node " " ?x " " ?y " " ?th crlf)
+    ;(printout t "plan " ?movenum ": " ?fnode " " ?fx " " ?fy " " ?fth " => " ?node " " ?x " " ?y " " ?th crlf)
     (modify ?p (movenum (+ ?movenum 1))(theta (+ ?fth ?th)))
     (assert (move ?node ?x ?y ?th ?danger))
     (assert (move-from ?fnode ?fx ?fy ?fth ?fdanger))

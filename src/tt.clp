@@ -1,2 +1,6 @@
 (load-package GUI.pkg)
-(GUIRevise)
+
+(deftemplate goal
+    (slot waypoint))
+
+(GUI)

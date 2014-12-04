@@ -8,8 +8,8 @@ public class pkg implements Userpackage {
     public void add(Rete engine) {
     	reteEngine = engine;
     	
+    	engine.addUserfunction(new funOldGUI());
     	engine.addUserfunction(new funGUI());
-    	engine.addUserfunction(new funGUIRevise());
     }
     
     public static void evaluate(String jessCmd) {
